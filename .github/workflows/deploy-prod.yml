@@ -20,7 +20,7 @@ jobs:
     environment: main  # GitHub Environments에서 main 환경에 등록된 secret 사용
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
