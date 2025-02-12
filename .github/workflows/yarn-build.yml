@@ -15,7 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ${{ inputs.node-version }}
+        node-version: [ "${{ inputs.node-version }}" ]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
