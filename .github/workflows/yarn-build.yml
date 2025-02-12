@@ -1,3 +1,4 @@
+# .github/workflows/yarn-build.yml
 name: Yarn Build
 
 on:
@@ -7,10 +8,14 @@ on:
         description: "Node.js version to use"
         required: false
         default: "16.x"
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ${{ inputs.node-version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -18,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ inputs.node-version }}
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
