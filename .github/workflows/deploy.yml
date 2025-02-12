@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Yarn Build
-        uses: ./.github/actions/yarn-build.yml
+        uses: ./.github/actions/yarn-build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Yarn Build
-        uses: ./.github/actions/yarn-build.yml
+        uses: ./.github/actions/yarn-build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
