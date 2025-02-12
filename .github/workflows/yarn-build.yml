@@ -1,0 +1,39 @@
+name: Yarn Build
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: "Node.js version to use"
+        required: ture
+        default: "16.x"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ "${{ inputs.node-version }}" ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint code
+        run: yarn lint
+
+      - name: Build project
+        run: yarn build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifact
+          path: ./build

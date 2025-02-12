@@ -1,0 +1,40 @@
+# .github/workflows/deploy-prod.yml
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/yarn-build.yml
+    with:
+      node-version: "16.x"
+
+  deploy:
+    name: Deploy to Production
+    needs: build
+    runs-on: ubuntu-latest
+    environment: main  # GitHub Environments에서 main 환경에 등록된 secret 사용
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3 (Production)
+        run: |
+          aws s3 sync --delete ./build s3://${{ vars.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Invalidate CloudFront Cache (Production)
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.DISTRIBUTION_ID }} \
+            --paths "/*"
