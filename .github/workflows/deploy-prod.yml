@@ -23,17 +23,18 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifact
+          path: ./build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Deploy to S3 (Production)
         run: |
-          aws s3 sync --delete ./build s3://${{ vars.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
+          aws s3 sync --delete ./build s3://${{ vars.S3_BUCKET }} --region ${{ secrets.AWS_DEFAULT_REGION }}
 
       - name: Invalidate CloudFront Cache (Production)
         run: |
