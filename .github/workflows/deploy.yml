@@ -1,8 +1,8 @@
-name: S3-CloudFront-Deploy
+name: S3 CloudFront Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main, develop" ]
 
 jobs:
   deploy:
@@ -20,14 +20,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: yarn
-
       - name: Lint code
         run: yarn lint
 
       - name: Build
-        run: yarn build
+        run: yarn & yarn build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
