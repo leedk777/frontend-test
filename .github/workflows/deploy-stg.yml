@@ -19,22 +19,24 @@ jobs:
     runs-on: ubuntu-latest
     environment: develop  # GitHub Environments에서 staging 환경에 등록된 secret 사용
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Deploy to S3 (Staging)
-        run: |
-          aws s3 sync --delete ./build s3://${{ vars.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
-
-      - name: Invalidate CloudFront Cache (Staging)
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ vars.DISTRIBUTION_ID }} \
-            --paths "/*"
+        - name: Download build artifact
+          uses: actions/download-artifact@v3
+          with:
+            name: build-artifact
+  
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ secrets.AWS_REGION }}
+  
+        - name: Deploy to S3 (Production)
+          run: |
+            aws s3 sync --delete ./build s3://${{ vars.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
+  
+        - name: Invalidate CloudFront Cache (Production)
+          run: |
+            aws cloudfront create-invalidation \
+              --distribution-id ${{ vars.DISTRIBUTION_ID }} \
+              --paths "/*"
