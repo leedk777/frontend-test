@@ -1,4 +1,5 @@
-name: S3 CloudFront Deploy
+# .github/workflows/deploy.yml
+name: Deploy
 
 on:
   push:
@@ -7,42 +8,51 @@ on:
       - develop
 
 jobs:
-  deploy:
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    environment: main
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
-
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
+      - name: Run Yarn Build
+        uses: ./.github/actions/yarn-build.yml
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: yarn
-
-      - name: Lint code
-        run: yarn lint
-
-      - name: Build
-        run: yarn build
-
-      - name: Configure AWS credentials
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name : S3 Deploy
+      - name: S3 Deploy
         run: |
-          aws s3 sync --delete ./build s3://${{secrets.S3_BUCKET}} --region ${{ secrets.AWS_REGION }}
+          aws s3 sync --delete ./build s3://${{ secrets.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
 
-      - name : Invalidate CloudFront Cache
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.DISTRIBUTION_ID }} \
+            --paths "/*"
+
+  deploy-stg:
+    if: github.ref == 'refs/heads/develop'
+    environment: develop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Yarn Build
+        uses: ./.github/actions/yarn-build.yml
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: S3 Deploy
+        run: |
+          aws s3 sync --delete ./build s3://${{ secrets.S3_BUCKET }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.DISTRIBUTION_ID }} \

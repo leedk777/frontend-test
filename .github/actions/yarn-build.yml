@@ -1,0 +1,22 @@
+# .github/actions/yarn-build.yml
+name: Yarn Build
+description: "Checkout, install dependencies, lint, and build the project"
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: "16.x"
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+
+    - name: Lint code
+      run: yarn lint
+
+    - name: Build project
+      run: yarn build
